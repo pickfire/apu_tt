@@ -10,15 +10,17 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-#[macro_use]
-extern crate prettytable;
+extern crate tabwriter;
 
-// extern crate rmp_serde;
+use std::io::Write;
 
-// use std::fs::File;
+const URL: &str = "https://ws.apiit.edu.my/web-services/index.php/open/weektimetable";
 
 error_chain! {
     foreign_links {
+        TabWriterError(tabwriter::IntoInnerError<tabwriter::TabWriter<Vec<u8>>>);
+        Utf8Error(std::string::FromUtf8Error);
+        JsonError(serde_json::error::Error);
         ReqError(reqwest::Error);
         IoError(std::io::Error);
     }
@@ -38,37 +40,33 @@ struct Class {
 }
 
 fn run() -> Result<()> {
-    let body =
-        reqwest::get("https://ws.apiit.edu.my/web-services/index.php/open/weektimetable")?.text()?;
-    let data: Vec<Class> = serde_json::from_str(&body).unwrap();
+    let body = reqwest::get(URL)?.text()?;
+    let data: Vec<Class> = serde_json::from_str(&body)?;
 
-    // let mut buffer = File::create("cache").expect("serialize");
-
-    // TODO: Caching
-    // rmp_serde::to_writer(&mut buffer, &data, false);
-
-    // TODO: Config
-    let classes: Vec<Class> = data.into_iter()
+    let classes: Vec<_> = data.into_iter()
         .filter(|c| c.INTAKE == "UC1F1705CS(DA)")
+        .map(|c| Class {
+            LOCATION: c.LOCATION.replace("NEW CAMPUS", "NEW"),
+            ..c
+        })
         .collect();
 
-    let mut table = prettytable::Table::new();
+    let mut tw = tabwriter::TabWriter::new(vec![]);
     for class in classes {
-        table.add_row(row![
+        writeln!(
+            &mut tw,
+            "{}\t{}\t{}\t{}\t{}\t{}-{}",
             class.DAY,
-            class.LOCATION.replace("NEW CAMPUS", "NEW"),
+            class.LOCATION,
             class.ROOM,
             class.MODID,
             class.LECTID,
-            format!("{}-{}", class.TIME_FROM, class.TIME_TO)
-        ]);
+            class.TIME_FROM,
+            class.TIME_TO
+        )?;
     }
-
-    let format = prettytable::format::FormatBuilder::new()
-        .column_separator(' ')
-        .build();
-    table.set_format(format);
-    table.printstd();
+    tw.flush()?;
+    print!("{}", String::from_utf8(tw.into_inner()?)?);
 
     Ok(())
 }
