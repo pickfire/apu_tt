@@ -40,9 +40,7 @@ struct Class {
 }
 
 fn run() -> Result<()> {
-    let body = reqwest::get(URL)?.text()?;
-    let data: Vec<Class> = serde_json::from_str(&body)?;
-
+    let data: Vec<Class> = reqwest::get(URL)?.json()?;
     let classes: Vec<_> = data.into_iter()
         .filter(|c| c.INTAKE == "UC1F1705CS(DA)")
         .map(|c| Class {
