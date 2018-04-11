@@ -11,14 +11,17 @@ extern crate serde_derive;
 extern crate serde_json;
 
 extern crate tabwriter;
+extern crate yansi;
 
 use std::io::Write;
+use tabwriter::TabWriter;
+use yansi::Paint;
 
 const URL: &str = "https://ws.apiit.edu.my/web-services/index.php/open/weektimetable";
 
 error_chain! {
     foreign_links {
-        TabWriterError(tabwriter::IntoInnerError<tabwriter::TabWriter<Vec<u8>>>);
+        TabWriterError(tabwriter::IntoInnerError<TabWriter<Vec<u8>>>);
         Utf8Error(std::string::FromUtf8Error);
         JsonError(serde_json::error::Error);
         ReqError(reqwest::Error);
@@ -42,25 +45,27 @@ struct Class {
 fn run() -> Result<()> {
     let data: Vec<Class> = reqwest::get(URL)?.json()?;
     let classes: Vec<_> = data.into_iter()
-        .filter(|c| c.INTAKE == "UC1F1705CS(DA)")
+        .filter(|c| {
+            c.INTAKE == "UC1F1709CS(DA)"
+                && (c.MODID.contains("T-1") || c.MODID.contains("L") || c.MODID.contains("(LS)"))
+        })
         .map(|c| Class {
             LOCATION: c.LOCATION.replace("NEW CAMPUS", "NEW"),
             ..c
         })
         .collect();
 
-    let mut tw = tabwriter::TabWriter::new(vec![]);
+    let mut tw = TabWriter::new(vec![]);
     for class in classes {
         writeln!(
             &mut tw,
-            "{}\t{}\t{}\t{}\t{}\t{}-{}",
-            class.DAY,
-            class.LOCATION,
-            class.ROOM,
-            class.MODID,
-            class.LECTID,
-            class.TIME_FROM,
-            class.TIME_TO
+            "{}\t{}\t{}\t{}\t{}\t{}",
+            Paint::purple(class.DAY),
+            Paint::blue(class.LOCATION).bold(),
+            Paint::yellow(class.ROOM),
+            Paint::cyan(class.MODID),
+            Paint::green(class.LECTID),
+            Paint::red(format!("{}-{}", class.TIME_FROM, class.TIME_TO))
         )?;
     }
     tw.flush()?;
