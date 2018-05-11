@@ -1,8 +1,5 @@
 #![allow(warnings)]
 
-#[macro_use]
-extern crate error_chain;
-
 extern crate reqwest;
 
 extern crate serde;
@@ -19,16 +16,6 @@ use yansi::Paint;
 
 const URL: &str = "https://ws.apiit.edu.my/web-services/index.php/open/weektimetable";
 
-error_chain! {
-    foreign_links {
-        TabWriterError(tabwriter::IntoInnerError<TabWriter<Vec<u8>>>);
-        Utf8Error(std::string::FromUtf8Error);
-        JsonError(serde_json::error::Error);
-        ReqError(reqwest::Error);
-        IoError(std::io::Error);
-    }
-}
-
 #[derive(Serialize, Deserialize, Debug)]
 struct Class {
     INTAKE: String,
@@ -42,11 +29,11 @@ struct Class {
     TIME_TO: String,
 }
 
-fn run() -> Result<()> {
+fn main() -> Result<(), Box<std::error::Error>> {
     let data: Vec<Class> = reqwest::get(URL)?.json()?;
     let classes: Vec<_> = data.into_iter()
         .filter(|c| {
-            c.INTAKE == "UC1F1709CS(DA)"
+            c.INTAKE == "UC2F1805CS(DA)"
                 && (c.MODID.contains("T-1") || c.MODID.contains("L") || c.MODID.contains("(LS)"))
         })
         .map(|c| Class {
@@ -73,5 +60,3 @@ fn run() -> Result<()> {
 
     Ok(())
 }
-
-quick_main!(run);
