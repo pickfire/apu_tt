@@ -48,11 +48,11 @@ fn main() -> Result<(), Box<std::error::Error>> {
             &mut tw,
             "{}\t{}\t{}\t{}\t{}\t{}",
             Paint::purple(class.DAY),
+            Paint::green(format!("{}-{}", class.TIME_FROM, class.TIME_TO)),
             Paint::blue(class.LOCATION).bold(),
-            Paint::yellow(class.ROOM),
-            Paint::cyan(class.MODID),
-            Paint::green(class.LECTID),
-            Paint::red(format!("{}-{}", class.TIME_FROM, class.TIME_TO))
+            Paint::red(class.ROOM),
+            Paint::yellow(class.MODID),
+            Paint::cyan(class.LECTID),
         )?;
     }
     tw.flush()?;
