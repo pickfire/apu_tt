@@ -7,9 +7,11 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
+extern crate chrono;
 extern crate tabwriter;
 extern crate yansi;
 
+use chrono::prelude::*;
 use std::io::Write;
 use tabwriter::TabWriter;
 use yansi::Paint;
@@ -26,6 +28,7 @@ struct Class {
     room: String,
     lectid: String,
     datestamp: String,
+    datestamp_iso: String,
     time_from: String,
     time_to: String,
 }
@@ -48,8 +51,14 @@ fn main() -> Result<(), Box<std::error::Error>> {
         writeln!(
             &mut tw,
             "{}\t{}\t{}\t{}\t{}\t{}",
-            Paint::purple(class.day),
-            Paint::green(format!("{}-{}", class.time_from, class.time_to)),
+            Paint::purple(
+                NaiveDate::parse_from_str(&*class.datestamp_iso, "%F")?.format("%a %b %d")
+            ),
+            Paint::green(format!(
+                "{}-{}",
+                NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?.format("%H%M"),
+                NaiveTime::parse_from_str(&*class.time_to, "%I:%M %p")?.format("%H%M")
+            )),
             Paint::blue(class.location).bold(),
             Paint::red(class.room),
             Paint::yellow(class.modid),
