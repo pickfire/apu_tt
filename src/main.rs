@@ -14,7 +14,7 @@ use std::io::Write;
 use tabwriter::TabWriter;
 use yansi::Paint;
 
-const URL: &str = "https://ws.apiit.edu.my/web-services/index.php/open/weektimetable";
+const URL: &str = "http://s3-ap-southeast-1.amazonaws.com/open-ws/weektimetable";
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
