@@ -1,5 +1,3 @@
-#![allow(warnings)]
-
 extern crate reqwest;
 
 extern crate serde;
@@ -33,12 +31,12 @@ struct Class {
     time_to: String,
 }
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let data: Vec<Class> = reqwest::get(URL)?.json()?;
     let classes: Vec<_> = data.into_iter()
         .filter(|c| {
             c.intake == "UC2F1805CS(DA)"
-                && (c.modid.contains("T-1") || c.modid.contains("L") || c.modid.contains("(LS)"))
+                && (c.modid.contains("T-1") || c.modid.contains('L') || c.modid.contains("(LS)"))
         })
         .map(|c| Class {
             location: c.location.replace("NEW CAMPUS", "NEW"),
