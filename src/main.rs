@@ -10,7 +10,8 @@ extern crate tabwriter;
 extern crate yansi;
 
 use chrono::prelude::*;
-use std::io::Write;
+use reqwest::{header::IfModifiedSince, StatusCode};
+use std::{env, fs::{self, File}, io::{BufReader, BufWriter, Write}};
 use tabwriter::TabWriter;
 use yansi::Paint;
 
@@ -32,7 +33,28 @@ struct Class {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let data: Vec<Class> = reqwest::get(URL)?.json()?;
+    let cache = env::home_dir().unwrap().join(".cache/weektimetable");
+    let mut request = reqwest::Client::new().get(URL);
+
+    if cache.exists() {
+        if let Ok(time) = fs::metadata(&cache)?.modified() {
+            request.header(IfModifiedSince(time.into()));
+        }
+    }
+
+    let mut response = request.send()?;
+    let data: Vec<Class> = match response.status() {
+        StatusCode::Ok => {
+            let mut buf = vec![];
+            response.copy_to(&mut buf)?;
+
+            BufWriter::new(File::create(&cache)?).write_all(&buf)?;
+            serde_json::from_slice(&buf)?
+        }
+        StatusCode::NotModified => serde_json::from_reader(BufReader::new(File::open(&cache)?))?,
+        s => panic!("Received response status: {:?}", s),
+    };
+
     let classes: Vec<_> = data.into_iter()
         .filter(|c| {
             c.intake == "UC2F1805CS(DA)"

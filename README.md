@@ -6,8 +6,9 @@ Display intake timetable Asia Pacific University with open web services API.
 Features
 --------
 - pretty table
-- WIP color
-- WIP cache
+- fully colored
+- cache response
+- WIP offline request
 - WIP config
 
 Building
@@ -18,10 +19,14 @@ tt is written in [Rust](https://rustup.rs/).
     $ cd apu_tt
     $ cargo build --release
     $ ./target/release/tt
-    MON NEW Tech Lab 6-03          CT043-3-1-IN-LAB  TGK 08:30 AM-10:30 AM
-    MON NEW B-08-05                CT017-3-1-IAI-T   VTK 12:40 PM-01:40 PM
-    WED NEW Auditorium 4 @ Level 3 MPU3123-TITAS(LS) SUH 05:30 PM-08:30 PM
-    WED NEW B-07-05                MPU3143-BMK2(FS)  WLM 05:30 PM-08:30 PM
-    MON NEW B-08-05                CT042-3-1-IDB-L   HBL 01:45 PM-03:45 PM
-    WED NEW Auditorium 5 @ Level 3 CT018-3-1-ICP-L   SMS 10:35 AM-12:05 PM
+    Mon Jul 02  1450-1550  NEW  D-07-08                 CT075-3-2-DTM-L       SLM
+    Tue Jul 03  1035-1235  NEW  Tech Lab 6-09           CT075-3-2-DTM-LAB     SLM
+    Tue Jul 03  1730-2030  NEW  Auditorium 5 @ Level 3  MPU3113-HE(LS)        SUH
+    Tue Jul 03  1730-2030  NEW  B-07-04                 MPU3173-MLY3 (FS)     RGA
+    Wed Jul 04  1240-1340  NEW  B-08-08                 CT111-3-2-COMT-L      LGR
+    Thu Jul 05  0830-0930  NEW  Auditorium 2 @ Level 6  CT046-3-2-SDM-L       SVC
+    Thu Jul 05  0930-1030  NEW  Auditorium 5 @ Level 3  CT042-3-2-PSMOD-L     TKK
+    Fri Jul 06  1035-1235  NEW  Tech Lab 4-03           CT038-3-2-OODJ-LAB-T  LKK
+    Fri Jul 06  1445-1545  NEW  Auditorium 2 @ Level 6  CT105-3-2-PDT-L       KID
+    Fri Jul 06  1545-1645  NEW  Auditorium 2 @ Level 6  CT038-3-2-OODJ-L      LKK
 
