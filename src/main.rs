@@ -44,10 +44,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let (save, classes): (bool, Vec<Class>) = if let Ok(mut response) = request.send() {
+    let mut save = false;
+    let classes: Vec<Class> = if let Ok(mut response) = request.send() {
         match response.status() {
-            StatusCode::Ok => (
-                true,
+            StatusCode::Ok => {
+                save = true;
                 response
                     .json::<Vec<Class>>()?
                     .into_iter()
@@ -56,19 +57,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         location: c.location.replace("NEW CAMPUS", "NEW"),
                         ..c
                     })
-                    .collect(),
-            ),
-            StatusCode::NotModified => (
-                false,
-                serde_json::from_reader(BufReader::new(File::open(&cache)?))?,
-            ),
+                    .collect()
+            }
+            StatusCode::NotModified => {
+                serde_json::from_reader(BufReader::new(File::open(&cache)?))?
+            }
             s => panic!("Received response status: {:?}", s),
         }
     } else {
-        (
-            false,
-            serde_json::from_reader(BufReader::new(File::open(&cache)?))?,
-        )
+        serde_json::from_reader(BufReader::new(File::open(&cache)?))?
     };
 
     let mut tw = TabWriter::new(vec![]);
