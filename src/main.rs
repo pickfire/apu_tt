@@ -11,7 +11,9 @@ extern crate yansi;
 
 use chrono::prelude::*;
 use reqwest::{header::IfModifiedSince, StatusCode};
-use std::{env, fs::{self, File}, io::{BufReader, BufWriter, Write}};
+use std::{
+    env, fs::{self, File}, io::{BufReader, BufWriter, Write},
+};
 use tabwriter::TabWriter;
 use yansi::Paint;
 
@@ -42,17 +44,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let mut response = request.send()?;
-    let data: Vec<Class> = match response.status() {
-        StatusCode::Ok => {
-            let mut buf = vec![];
-            response.copy_to(&mut buf)?;
-
-            BufWriter::new(File::create(&cache)?).write_all(&buf)?;
-            serde_json::from_slice(&buf)?
+    let data: Vec<Class> = if let Ok(mut response) = request.send() {
+        match response.status() {
+            StatusCode::Ok => {
+                let mut buf = vec![];
+                response.copy_to(&mut buf)?;
+                BufWriter::new(File::create(&cache)?).write_all(&buf)?;
+                serde_json::from_slice(&buf)?
+            }
+            StatusCode::NotModified => {
+                serde_json::from_reader(BufReader::new(File::open(&cache)?))?
+            }
+            s => panic!("Received response status: {:?}", s),
         }
-        StatusCode::NotModified => serde_json::from_reader(BufReader::new(File::open(&cache)?))?,
-        s => panic!("Received response status: {:?}", s),
+    } else {
+        serde_json::from_reader(BufReader::new(File::open(&cache)?))?
     };
 
     let classes: Vec<_> = data.into_iter()
