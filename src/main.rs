@@ -44,36 +44,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let data: Vec<Class> = if let Ok(mut response) = request.send() {
+    let (save, classes): (bool, Vec<Class>) = if let Ok(mut response) = request.send() {
         match response.status() {
-            StatusCode::Ok => {
-                let mut buf = vec![];
-                response.copy_to(&mut buf)?;
-                BufWriter::new(File::create(&cache)?).write_all(&buf)?;
-                serde_json::from_slice(&buf)?
-            }
-            StatusCode::NotModified => {
-                serde_json::from_reader(BufReader::new(File::open(&cache)?))?
-            }
+            StatusCode::Ok => (
+                true,
+                response
+                    .json::<Vec<Class>>()?
+                    .into_iter()
+                    .filter(|c| c.intake == "UC2F1805CS(DA)" && !c.modid.contains("(FS)"))
+                    .map(|c| Class {
+                        location: c.location.replace("NEW CAMPUS", "NEW"),
+                        ..c
+                    })
+                    .collect(),
+            ),
+            StatusCode::NotModified => (
+                false,
+                serde_json::from_reader(BufReader::new(File::open(&cache)?))?,
+            ),
             s => panic!("Received response status: {:?}", s),
         }
     } else {
-        serde_json::from_reader(BufReader::new(File::open(&cache)?))?
+        (
+            false,
+            serde_json::from_reader(BufReader::new(File::open(&cache)?))?,
+        )
     };
 
-    let classes: Vec<_> = data.into_iter()
-        .filter(|c| {
-            c.intake == "UC2F1805CS(DA)"
-                && (c.modid.contains("T-1") || c.modid.contains('L') || c.modid.contains("(LS)"))
-        })
-        .map(|c| Class {
-            location: c.location.replace("NEW CAMPUS", "NEW"),
-            ..c
-        })
-        .collect();
-
     let mut tw = TabWriter::new(vec![]);
-    for class in classes {
+    for class in &classes {
         writeln!(
             &mut tw,
             "{}\t{}\t{}\t{}\t{}\t{}",
@@ -85,14 +84,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?.format("%H%M"),
                 NaiveTime::parse_from_str(&*class.time_to, "%I:%M %p")?.format("%H%M")
             )),
-            Paint::blue(class.location).bold(),
-            Paint::red(class.room),
-            Paint::yellow(class.modid),
-            Paint::cyan(class.lectid),
+            Paint::blue(&class.location).bold(),
+            Paint::red(&class.room),
+            Paint::yellow(&class.modid),
+            Paint::cyan(&class.lectid),
         )?;
     }
     tw.flush()?;
     print!("{}", String::from_utf8(tw.into_inner()?)?);
+
+    if save {
+        serde_json::to_writer(BufWriter::new(File::create(&cache)?), &classes)?;
+    }
 
     Ok(())
 }
