@@ -3,7 +3,7 @@ extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde_json;
+extern crate serde_cbor;
 
 extern crate chrono;
 extern crate tabwriter;
@@ -63,12 +63,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .collect()
             }
             StatusCode::NotModified => {
-                serde_json::from_reader(BufReader::new(File::open(&cache)?))?
+                serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?
             }
             s => panic!("Received response status: {:?}", s),
         }
     } else {
-        serde_json::from_reader(BufReader::new(File::open(&cache)?))?
+        serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?
     };
 
     let mut tw = TabWriter::new(vec![]);
@@ -94,7 +94,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     print!("{}", String::from_utf8(tw.into_inner()?)?);
 
     if save {
-        serde_json::to_writer(BufWriter::new(File::create(&cache)?), &classes)?;
+        serde_cbor::to_writer(&mut BufWriter::new(File::create(&cache)?), &classes)?;
     }
 
     Ok(())
