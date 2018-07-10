@@ -12,7 +12,9 @@ extern crate yansi;
 use chrono::prelude::*;
 use reqwest::{header::IfModifiedSince, StatusCode};
 use std::{
-    env, fs::{self, File}, io::{BufReader, BufWriter, Write},
+    env,
+    fs::{self, File},
+    io::{BufReader, BufWriter, Write},
 };
 use tabwriter::TabWriter;
 use yansi::Paint;
