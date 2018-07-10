@@ -6,13 +6,13 @@ extern crate serde_derive;
 extern crate serde_cbor;
 
 extern crate chrono;
+extern crate dirs;
 extern crate tabwriter;
 extern crate yansi;
 
 use chrono::prelude::*;
 use reqwest::{header::IfModifiedSince, StatusCode};
 use std::{
-    env,
     fs::{self, File},
     io::{BufReader, BufWriter, Write},
 };
@@ -40,7 +40,7 @@ struct Class {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cache = env::home_dir().unwrap().join(".cache/weektimetable");
+    let cache = dirs::cache_dir().unwrap().join("weektimetable");
     let mut request = reqwest::Client::new().get(URL);
 
     if cache.exists() {
