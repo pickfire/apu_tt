@@ -22,15 +22,15 @@ const URL: &str = "http://s3-ap-southeast-1.amazonaws.com/open-ws/weektimetable"
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 struct Class {
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, default = "String::new")]
     intake: String,
     modid: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, default = "String::new")]
     day: String,
     location: String,
     room: String,
     lectid: String,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, default = "String::new")]
     datestamp: String,
     datestamp_iso: String,
     time_from: String,

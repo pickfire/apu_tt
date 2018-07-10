@@ -8,8 +8,7 @@ Features
 - pretty table
 - fully colored
 - cache response
-- WIP offline request
-- WIP config
+- offline request
 
 Building
 --------
