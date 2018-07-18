@@ -11,7 +11,7 @@ extern crate tabwriter;
 extern crate yansi;
 
 use chrono::prelude::*;
-use reqwest::{header::IfModifiedSince, StatusCode};
+use reqwest::StatusCode;
 use std::{
     fs::{self, File},
     io::{BufReader, BufWriter, Write},
@@ -45,14 +45,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if cache.exists() {
         if let Ok(time) = fs::metadata(&cache)?.modified() {
-            request.header(IfModifiedSince(time.into()));
+            let time: DateTime<Utc> = DateTime::from(time);
+            request = request.header("if-modified-since", time.to_rfc2822());
         }
     }
 
     let mut save = false;
     let classes: Vec<Class> = if let Ok(mut response) = request.send() {
         match response.status() {
-            StatusCode::Ok => {
+            StatusCode::OK => {
                 save = true;
                 response
                     .json::<Vec<Class>>()?
@@ -61,10 +62,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .map(|c| Class {
                         location: c.location.replace("NEW CAMPUS", "NEW"),
                         ..c
-                    })
-                    .collect()
+                    }).collect()
             }
-            StatusCode::NotModified => {
+            StatusCode::NOT_MODIFIED => {
                 serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?
             }
             s => panic!("Received response status: {:?}", s),
