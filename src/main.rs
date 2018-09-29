@@ -94,7 +94,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         write!(
             &mut tw,
-            "{}{}\t{}{}-{}",
+            "{}{}  {}{}-{}",
             color::Fg(color::Magenta),
             date.format("%a %b %d"),
             color::Fg(color::Green),
