@@ -14,7 +14,7 @@ use chrono::prelude::*;
 use reqwest::StatusCode;
 use std::{
     fs::{self, File},
-    io::{BufReader, BufWriter, Write},
+    io::{self, BufReader, BufWriter, Write},
 };
 use tabwriter::TabWriter;
 use termion::{color, color::DetectColors, style};
@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let now = Local::now().naive_local();
     let mut next = false;
 
-    let mut tw = TabWriter::new(vec![]);
+    let mut tw = TabWriter::new(io::stdout());
     for class in &classes {
         let date = NaiveDate::parse_from_str(&*class.datestamp_iso, "%F")?;
         let time_since = NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?;
@@ -108,7 +108,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         writeln!(&mut tw, "{}", style::Reset);
     }
     tw.flush()?;
-    print!("{}", String::from_utf8(tw.into_inner()?)?);
 
     if save {
         serde_cbor::to_writer(&mut BufWriter::new(File::create(&cache)?), &classes)?;
