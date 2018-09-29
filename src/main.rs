@@ -8,7 +8,7 @@ extern crate serde_cbor;
 extern crate chrono;
 extern crate dirs;
 extern crate tabwriter;
-extern crate yansi;
+extern crate termion;
 
 use chrono::prelude::*;
 use reqwest::StatusCode;
@@ -17,7 +17,7 @@ use std::{
     io::{BufReader, BufWriter, Write},
 };
 use tabwriter::TabWriter;
-use yansi::Paint;
+use termion::{color, color::DetectColors, style};
 
 const URL: &str = "http://s3-ap-southeast-1.amazonaws.com/open-ws/weektimetable";
 
@@ -73,24 +73,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?
     };
 
+    let now = Local::now().naive_local();
+    let mut next = false;
+
     let mut tw = TabWriter::new(vec![]);
     for class in &classes {
-        writeln!(
+        let date = NaiveDate::parse_from_str(&*class.datestamp_iso, "%F")?;
+        let time_since = NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?;
+        let time_until = NaiveTime::parse_from_str(&*class.time_to, "%I:%M %p")?;
+
+        if !next && now < NaiveDateTime::new(date, time_since) {
+            if tw.available_colors()? >= 256 {
+                let grey = color::Rgb(0x44, 0x44, 0x44);
+                write!(&mut tw, "{}{}", color::Bg(grey), style::Bold);
+            } else {
+                write!(&mut tw, "{}{}", color::Bg(color::White), style::Bold);
+            };
+            next = true;
+        }
+
+        write!(
             &mut tw,
-            "{}\t{}\t{}\t{}\t{}\t{}",
-            Paint::purple(
-                NaiveDate::parse_from_str(&*class.datestamp_iso, "%F")?.format("%a %b %d")
-            ),
-            Paint::green(format!(
-                "{}-{}",
-                NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?.format("%H%M"),
-                NaiveTime::parse_from_str(&*class.time_to, "%I:%M %p")?.format("%H%M")
-            )),
-            Paint::blue(&class.location).bold(),
-            Paint::red(&class.room),
-            Paint::yellow(&class.modid),
-            Paint::cyan(&class.lectid),
-        )?;
+            "{}{}\t{}{}-{}",
+            color::Fg(color::Magenta),
+            date.format("%a %b %d"),
+            color::Fg(color::Green),
+            time_since.format("%H%M"),
+            time_until.format("%H%M")
+        );
+        write!(&mut tw, "\t{}{}", color::Fg(color::Blue), &class.location);
+        write!(&mut tw, "\t{}{}", color::Fg(color::Red), &class.room);
+        write!(&mut tw, "\t{}{}", color::Fg(color::Yellow), &class.modid);
+        write!(&mut tw, "\t{}{}", color::Fg(color::Cyan), &class.lectid);
+        writeln!(&mut tw, "{}", style::Reset);
     }
     tw.flush()?;
     print!("{}", String::from_utf8(tw.into_inner()?)?);
