@@ -77,13 +77,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut next = false;
 
     let mut tw = TabWriter::new(io::stdout());
+    let n_colors = tw.available_colors()?;
     for class in &classes {
         let date = NaiveDate::parse_from_str(&*class.datestamp_iso, "%F")?;
         let time_since = NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?;
         let time_until = NaiveTime::parse_from_str(&*class.time_to, "%I:%M %p")?;
 
         if !next && now < NaiveDateTime::new(date, time_since) {
-            if tw.available_colors()? >= 256 {
+            if n_colors >= 256 {
                 let grey = color::Rgb(0x44, 0x44, 0x44);
                 write!(&mut tw, "{}{}", color::Bg(grey), style::Bold);
             } else {
