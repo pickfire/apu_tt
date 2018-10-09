@@ -10,7 +10,7 @@ extern crate dirs;
 extern crate tabwriter;
 extern crate termion;
 
-use chrono::prelude::*;
+use chrono::{prelude::*, Duration};
 use reqwest::StatusCode;
 use std::{
     fs::{self, File},
@@ -73,12 +73,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?
     };
 
-    let now = Local::now().naive_local();
-    let mut next = false;
+    // generate days in week as iso format and filter classes for week
+    let today = Local::today();
+    let this_monday = today.weekday().number_from_monday() as i64;
+    let this_week: Vec<String> = (0..7)
+        .map(|d| today - Duration::days(this_monday - d))
+        .map(|d| d.format("%F").to_string())
+        .collect();
 
+    // initialize writers and check available colors
     let mut tw = TabWriter::new(io::stdout());
     let n_colors = tw.available_colors()?;
-    for class in &classes {
+    let now = Local::now().naive_local();
+    let mut next = false; // highlight current or next class once
+
+    // display only relevant classes but classes filtered are cached
+    for class in classes
+        .iter()
+        .filter(|c| this_week.contains(&c.datestamp_iso))
+    {
         let date = NaiveDate::parse_from_str(&*class.datestamp_iso, "%F")?;
         let time_since = NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?;
         let time_until = NaiveTime::parse_from_str(&*class.time_to, "%I:%M %p")?;
