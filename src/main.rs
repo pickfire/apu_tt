@@ -83,7 +83,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let time_since = NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?;
         let time_until = NaiveTime::parse_from_str(&*class.time_to, "%I:%M %p")?;
 
-        if !next && now < NaiveDateTime::new(date, time_since) {
+        if !next && now < NaiveDateTime::new(date, time_until) {
             if n_colors >= 256 {
                 let grey = color::Rgb(0x44, 0x44, 0x44);
                 write!(&mut tw, "{}{}", color::Bg(grey), style::Bold);
