@@ -14,18 +14,18 @@ Building
 --------
 tt is written in [Rust](https://rustup.rs/).
 
-    $ git clone https://github.com/pickfire/apu_tt
-    $ cd apu_tt
-    $ cargo build --release
-    $ ./target/release/tt
-    Mon Jul 02  1450-1550  NEW  D-07-08                 CT075-3-2-DTM-L       SLM
-    Tue Jul 03  1035-1235  NEW  Tech Lab 6-09           CT075-3-2-DTM-LAB     SLM
-    Tue Jul 03  1730-2030  NEW  Auditorium 5 @ Level 3  MPU3113-HE(LS)        SUH
-    Tue Jul 03  1730-2030  NEW  B-07-04                 MPU3173-MLY3 (FS)     RGA
-    Wed Jul 04  1240-1340  NEW  B-08-08                 CT111-3-2-COMT-L      LGR
-    Thu Jul 05  0830-0930  NEW  Auditorium 2 @ Level 6  CT046-3-2-SDM-L       SVC
-    Thu Jul 05  0930-1030  NEW  Auditorium 5 @ Level 3  CT042-3-2-PSMOD-L     TKK
-    Fri Jul 06  1035-1235  NEW  Tech Lab 4-03           CT038-3-2-OODJ-LAB-T  LKK
-    Fri Jul 06  1445-1545  NEW  Auditorium 2 @ Level 6  CT105-3-2-PDT-L       KID
-    Fri Jul 06  1545-1645  NEW  Auditorium 2 @ Level 6  CT038-3-2-OODJ-L      LKK
+    $ cargo install --git git://github.com/pickfire/apu_tt
+    $ tt
+    Mon Oct 08  0830-1030  NEW  E-08-10                 BM006-3-2-CRI-T     HLH
+    Mon Oct 08  1135-1235  NEW  B-07-02                 CT077-3-2-DSTR-L    BPM
+    Mon Oct 08  1345-1515  NEW  E-08-05                 CT119-3-2-DMPM-L    PRE
+    Tue Oct 09  1035-1235  NEW  E-08-06                 CT122-3-2-BIS-T     MNB
+    Tue Oct 09  1345-1445  NEW  B-08-06                 CT074-3-2-CCP-L     ZAB
+    Tue Oct 09  1600-1700  NEW  Auditorium 2 @ Level 6  BM006-3-2-CRI-L     HLH
+    Wed Oct 10  0830-1030  NEW  Tech Lab 4-05           CT077-3-2-DSTR-LAB  BPM
+    Wed Oct 10  1240-1340  NEW  E-08-05                 CT122-3-2-BIS-L     MNB
+    Wed Oct 10  1345-1515  NEW  Tech Lab 4-03           CT119-3-2-DMPM-LAB  PRE
+    Thu Oct 11  1345-1545  NEW  B-08-08                 CT098-3-2-RMCT-T    CRR
+    Thu Oct 11  1600-1800  NEW  Tech Lab 6-07           CT074-3-2-CCP-LAB   ZAB
+    Fri Oct 12  1445-1545  NEW  B-05-01                 CT098-3-2-RMCT-L    CRR
 
