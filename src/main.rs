@@ -75,7 +75,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // generate days in week as iso format and filter classes for week
     let today = Local::today();
-    let this_monday = today.weekday().number_from_sunday() as i64;
+    let this_monday = i64::from(today.weekday().number_from_sunday());
     let this_week: Vec<_> = (1..=7)
         .map(|d| today - Duration::days(this_monday - d))
         .map(|d| d.format("%F").to_string())
