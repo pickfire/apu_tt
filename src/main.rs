@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .into_iter()
                     .filter(|c| c.intake == "UC2F1805CS(DA)" && !c.modid.starts_with("MPU"))
                     .map(|c| Class {
-                        location: c.location.replace("NEW CAMPUS", "NEW"),
+                        location: c.location.trim_end_matches(" CAMPUS").to_owned(),
                         ..c
                     }).collect()
             }
