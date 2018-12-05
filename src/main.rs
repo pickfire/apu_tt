@@ -99,9 +99,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if !next && now < NaiveDateTime::new(date, time_until) {
             if n_colors >= 256 {
                 let grey = color::Rgb(0x44, 0x44, 0x44);
-                write!(&mut tw, "{}{}", color::Bg(grey), style::Bold);
+                write!(&mut tw, "{}{}", color::Bg(grey), style::Bold)?;
             } else {
-                write!(&mut tw, "{}{}", color::Bg(color::White), style::Bold);
+                write!(&mut tw, "{}{}", color::Bg(color::White), style::Bold)?;
             };
             next = true;
         }
@@ -114,12 +114,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             color::Fg(color::Green),
             time_since.format("%H%M"),
             time_until.format("%H%M")
-        );
-        write!(&mut tw, "\t{}{}", color::Fg(color::Blue), &class.location);
-        write!(&mut tw, "\t{}{}", color::Fg(color::Red), &class.room);
-        write!(&mut tw, "\t{}{}", color::Fg(color::Yellow), &class.modid);
-        write!(&mut tw, "\t{}{}", color::Fg(color::Cyan), &class.lectid);
-        writeln!(&mut tw, "{}", style::Reset);
+        )?;
+        write!(&mut tw, "\t{}{}", color::Fg(color::Blue), &class.location)?;
+        write!(&mut tw, "\t{}{}", color::Fg(color::Red), &class.room)?;
+        write!(&mut tw, "\t{}{}", color::Fg(color::Yellow), &class.modid)?;
+        write!(&mut tw, "\t{}{}", color::Fg(color::Cyan), &class.lectid)?;
+        writeln!(&mut tw, "{}", style::Reset)?;
     }
     tw.flush()?;
 
