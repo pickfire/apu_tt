@@ -9,6 +9,8 @@ Features
 - fully colored
 - cache response
 - offline request
+- clever selection
+- timely highlights
 
 Building
 --------

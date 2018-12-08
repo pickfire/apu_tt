@@ -62,7 +62,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .map(|c| Class {
                         location: c.location.trim_end_matches(" CAMPUS").to_owned(),
                         ..c
-                    }).collect()
+                    })
+                    .collect()
             }
             StatusCode::NOT_MODIFIED => {
                 serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?
@@ -76,7 +77,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // generate days in week as iso format and filter classes for week
     let today = Local::today();
     let this_monday = i64::from(today.weekday().number_from_sunday());
-    let this_week: Vec<_> = (1..=7)
+    let mut find_week: Vec<_> = (1..=7)
         .map(|d| today - Duration::days(this_monday - d))
         .map(|d| d.format("%F").to_string())
         .collect();
@@ -87,14 +88,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let now = Local::now().naive_local();
     let mut next = false; // highlight current or next class once
 
+    // display next week classes if no more classes this week
+    let class_end_time = |c: &Class| {
+        NaiveDateTime::new(
+            NaiveDate::parse_from_str(&c.datestamp_iso, "%F").unwrap(),
+            NaiveTime::parse_from_str(&c.time_to, "%I:%M %p").unwrap(),
+        )
+    };
+    if !classes
+        .iter()
+        .filter(|c| find_week.contains(&c.datestamp_iso))
+        .any(|c| now < class_end_time(c))
+    {
+        find_week = (1..=7)
+            .map(|d| today - Duration::days(this_monday - d) + Duration::days(7))
+            .map(|d| d.format("%F").to_string())
+            .collect();
+    }
+
     // display only relevant classes but classes filtered are cached
     for class in classes
         .iter()
-        .filter(|c| this_week.contains(&c.datestamp_iso))
+        .filter(|c| find_week.contains(&c.datestamp_iso))
     {
-        let date = NaiveDate::parse_from_str(&*class.datestamp_iso, "%F")?;
-        let time_since = NaiveTime::parse_from_str(&*class.time_from, "%I:%M %p")?;
-        let time_until = NaiveTime::parse_from_str(&*class.time_to, "%I:%M %p")?;
+        let date = NaiveDate::parse_from_str(&class.datestamp_iso, "%F")?;
+        let time_since = NaiveTime::parse_from_str(&class.time_from, "%I:%M %p")?;
+        let time_until = NaiveTime::parse_from_str(&class.time_to, "%I:%M %p")?;
 
         if !next && now < NaiveDateTime::new(date, time_until) {
             if n_colors >= 256 {
