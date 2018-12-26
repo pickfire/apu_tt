@@ -1,17 +1,6 @@
-extern crate reqwest;
-
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_cbor;
-
-extern crate chrono;
-extern crate dirs;
-extern crate tabwriter;
-extern crate termion;
-
 use chrono::{prelude::*, Duration};
 use reqwest::StatusCode;
+use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
     io::{self, BufReader, BufWriter, Write},

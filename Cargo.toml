@@ -2,6 +2,7 @@
 name = "apu_tt"
 version = "0.1.0"
 authors = ["Ivan Tham <pickfire@riseup.net>"]
+edition = '2018'
 description = "APU Timetable CLI"
 readme = "README.md"
 
@@ -11,8 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 reqwest = "0.9"
-serde = "1.0"
-serde_derive = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 serde_cbor = "0.9"
 chrono = "0.4"
 dirs = "1.0"
