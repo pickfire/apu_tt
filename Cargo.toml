@@ -13,8 +13,8 @@ path = "src/main.rs"
 [dependencies]
 reqwest = "0.9"
 serde = { version = "1.0", features = ["derive"] }
-serde_cbor = "0.9"
+serde_cbor = "0.10"
 chrono = "0.4"
-dirs = "1.0"
+dirs = "2.0"
 tabwriter = { version = "1.1", features = ["ansi_formatting"] }
 termion = "1.5"
