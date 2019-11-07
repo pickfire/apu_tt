@@ -1,8 +1,8 @@
 use chrono::{prelude::*, Duration};
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{
-    fs::{self, File},
+    collections::HashSet,
+    fs::File,
     io::{self, BufReader, BufWriter, Write},
 };
 use tabwriter::TabWriter;
@@ -28,39 +28,39 @@ struct Class {
     time_to: String,
 }
 
+fn fetch_timetable() -> Result<Vec<Class>, Box<dyn std::error::Error>> {
+    Ok(reqwest::get(URL)?
+        .json::<Vec<Class>>()?
+        .into_iter()
+        .filter(|c| c.intake == "UC3F1906CS(DA)")
+        .map(|c| Class {
+            location: c.location.trim_end_matches(" CAMPUS").to_owned(),
+            ..c
+        })
+        .collect())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cache = dirs::cache_dir().unwrap().join("weektimetable");
-    let mut request = reqwest::Client::new().get(URL);
 
-    if cache.exists() {
-        if let Ok(time) = fs::metadata(&cache)?.modified() {
-            let time: DateTime<Utc> = DateTime::from(time);
-            request = request.header("if-modified-since", time.to_rfc2822());
-        }
-    }
-
-    let mut save = false;
-    let classes: Vec<Class> = if let Ok(mut response) = request.send() {
-        match response.status() {
-            StatusCode::OK => {
-                save = true;
-                response
-                    .json::<Vec<Class>>()?
-                    .into_iter()
-                    .filter(|c| c.intake == "UC3F1906CS(DA)")
-                    .map(|c| Class {
-                        location: c.location.trim_end_matches(" CAMPUS").to_owned(),
-                        ..c
-                    })
-                    .collect()
-            }
-            StatusCode::NOT_MODIFIED => {
-                serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?
-            }
-            s => panic!("Received response status: {:?}", s),
+    let mut save = true;
+    let classes: Vec<Class> = if cache.exists() {
+        let classes: Vec<Class> = serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?;
+        let dates: HashSet<_> = classes.iter().map(|c| &c.datestamp_iso).collect();
+        let today = Local::today();
+        let days_from_mon = i64::from(Weekday::num_days_from_monday(&today.weekday()));
+        let this_mon = today - Duration::days(days_from_mon);
+        let needs_update = dates
+            .iter()
+            .any(|d| NaiveDate::parse_from_str(&d, "%F").unwrap() < this_mon.naive_local());
+        if needs_update {
+            fetch_timetable().unwrap_or(classes)
+        } else {
+            save = false;
+            classes
         }
     } else {
-        serde_cbor::from_reader(BufReader::new(File::open(&cache)?))?
+        fetch_timetable()?
     };
 
     // generate days in week as iso format and filter classes for week
