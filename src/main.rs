@@ -29,7 +29,7 @@ struct Class {
 }
 
 fn fetch_timetable() -> Result<Vec<Class>, Box<dyn std::error::Error>> {
-    Ok(reqwest::get(URL)?
+    Ok(reqwest::blocking::get(URL)?
         .json::<Vec<Class>>()?
         .into_iter()
         .filter(|c| c.intake == "UC3F1906CS(DA)")
@@ -52,7 +52,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let this_mon = today - Duration::days(days_from_mon);
         let needs_update = dates
             .iter()
-            .any(|d| NaiveDate::parse_from_str(&d, "%F").unwrap() < this_mon.naive_local());
+            .any(|d| NaiveDate::parse_from_str(&d, "%F").unwrap() < this_mon.naive_local())
+            || dates.is_empty();
         if needs_update {
             fetch_timetable().unwrap_or(classes)
         } else {
